@@ -16,204 +16,541 @@ template $BavarderWindow : Adw.ApplicationWindow {
   }
 
   Adw.ToastOverlay toast_overlay {
-    Box {
-      orientation: vertical;
-      vexpand: true;
-      hexpand: true;
-      Adw.HeaderBar {
-        MenuButton menu {
-          primary: true;
-          menu-model: main-menu;
-          icon-name: "open-menu-symbolic";
-          tooltip-text: _("Main Menu");
-        }
-        styles ["flat"]
-      }
+    Adw.Leaflet leaflet {
 
-      Adw.Banner banner {
-        title: _("No network connection");
-        revealed: false;
-      }
+      Adw.LeafletPage sidebar {
 
-      Box main {
-        orientation: vertical;
-        vexpand: true;
-        hexpand: true;
-        margin-top: 0;
-        margin-bottom: 24;
-        margin-start: 24;
-        margin-end: 24;
-        spacing: 12;
+        navigatable: false;
 
-        Adw.PreferencesGroup prompt_group {
-          title: _("Message");
+        child: Revealer sidebar_revealer {
 
-          Box {
-            orientation: vertical;
-            hexpand: true;
+          transition-type: slide_right;
+          reveal-child: true;
+
+          child: Box {
+
+            orientation: horizontal;
+            hexpand: false;
             vexpand: true;
+            width-request: 224;
 
-            styles ["card", "text-box"]
+            Box {
 
-            ScrolledWindow {
-              margin-top: 12;
-              margin-bottom: 0;
-              margin-start: 12;
-              margin-end: 12;
-              styles ["scrolled-window"]
+              orientation: vertical;
+              hexpand: true;
+              vexpand: true;
 
-              TextView prompt_text_view {
-                wrap-mode: word_char;
+              Adw.HeaderBar headerbar_sidebar {
+
+                show-end-title-buttons: bind leaflet.folded;
+
+                [start]
+                Button button_create_conversation {
+                  icon-name: "list-add-symbolic";
+                  action-name: "app.new_conversation";
+                  tooltip-text: _("New Conversation");
+                }
+
+                [title]
+                Adw.WindowTitle conversation_title {}
+
+                [end]
+                ToggleButton {
+                  icon-name: "system-search-symbolic";
+                  tooltip-text: _("Search Conversations");
+                  active: bind-property conversations_search_bar.search-mode-enabled bidirectional;
+                }
+              }
+
+              SearchBar conversations_search_bar {
+                SearchEntry conversations_search_entry {}
+              }
+
+              ScrolledWindow notebook_conversations_list_scroller {
+
                 hexpand: true;
                 vexpand: true;
-                buffer: TextBuffer { };
-                //key-press => on_key_press_event();
+                hscrollbar-policy: never;
+                vscrollbar-policy: external;
 
-              }
-            }
-            Box {
-                hexpand: true;
-                halign: end;
-
-              styles ["toolbar"]
-              Button {
-                sensitive: false;
-                icon-name: "edit-copy-symbolic";
-                tooltip-text: _("Copy to Clipboard");
-                action-name: "app.copy_prompt";
-              }
-              // Button listen {
-              //   action-name: "app.listen";
-              //   tooltip-text: _("Listen");
-              //   icon-name: "audio-input-microphone-symbolic";
-              // }
-
-              // Button listen_wait {
-              //   visible: false;
-              //   sensitive: false;
-              //   tooltip-text: _("Listening");
-              //   Spinner listen_spinner {
-              //     margin-top: 8;
-              //     margin-bottom: 8;
-              //     margin-start: 8;
-              //     margin-end: 8;
-              //   }
-              // }
-              Button ask_button {
-                visible: true;
-                sensitive: false;
-                icon-name: "paper-plane-symbolic";
-                tooltip-text: _("Ask");
-                hexpand: true;
-                halign: end;
-                action-name: "app.ask";
-                styles ["suggested-action", "circular"]
-              }
-              Button wait_button {
-                visible: false;
-                sensitive: false;
-                tooltip-text: _("Wait");
-                styles ["suggested-action", "circular"]
-                Spinner spinner {
-                  margin-top: 8;
-                  margin-bottom: 8;
-                  margin-start: 8;
-                  margin-end: 8;
-                  styles ["suggested-action", "circular"]
+                ListView notebook_conversations_list {
+                  
                 }
               }
             }
+
+            
+          };
+        };
+      }
+
+      Adw.LeafletPage conversation_view_page {
+
+        navigatable: true;
+
+        child: Box main {
+          orientation: vertical;
+          vexpand: true;
+          hexpand: true;
+          width-request: 320;
+
+
+          
+
+          Adw.HeaderBar headerbar_edit_view {
+
+            hexpand: true;
+            vexpand: false;
+            visible: true;
+
+            [title]
+            Box {
+              orientation: vertical;
+              valign: center;
+              CenterBox {
+                orientation: horizontal;
+                halign: center;
+
+                styles ["title"]
+
+                [start]
+                Label save_indicator {
+                  label: "•";
+                  visible: false;
+                  hexpand: false;
+                  halign: end;
+                  margin-end: 6;
+                }
+                [center]
+                Label note_title {
+                  halign: fill;
+                }
+              }
+              Label note_subtitle {
+                styles ["subtitle"]
+              }
+            }
+
+            [start]
+            ToggleButton {
+              icon-name: "sidebar-show-symbolic";
+              tooltip-text: _("Toggle Sidebar");
+              active: bind sidebar_revealer.reveal-child bidirectional;
+              visible: bind leaflet.folded inverted;
+            }
+
+            [start]
+            Button button_back {
+              icon-name: "go-previous-symbolic";
+              tooltip-text: _("Back");
+              visible: bind leaflet.folded;
+            }
+
+            [end]
+            MenuButton menu {
+              primary: true;
+              menu-model: main-menu;
+              icon-name: "open-menu-symbolic";
+              tooltip-text: _("Main Menu");
+            }
+
+            [end]
+            Button button_open_in_notebook {
+              icon-name: "document-edit-symbolic";
+              tooltip-text: _("Open in Notebook");
+            }
+
+            [end]
+            Button button_md_cheatsheet_headerbar {
+              icon-name: "dialog-information-symbolic";
+              tooltip-text: _("Markdown Cheatsheet");
+              action-name: "app.markdown-cheatsheet";
+            }
           }
-        }
 
-        Adw.PreferencesGroup bot_group {
-          title: _("Response");
-
+          Adw.Banner banner {
+            title: _("No network connection");
+            revealed: false;
+          }
 
           Box {
+            margin-top: 0;
+            margin-bottom: 24;
+            margin-start: 24;
+            margin-end: 24;
+            spacing: 12;
+
             orientation: vertical;
-            hexpand: true;
-            vexpand: true;
 
-            styles ["card", "text-box"]
+            Adw.PreferencesPage {
+              hexpand: true;
+              vexpand: true;
+            Adw.PreferencesGroup prompt_group {
+              title: _("Message");
 
-            ScrolledWindow scrolled_response_window {
-              margin-top: 12;
-              margin-bottom: 0;
-              margin-start: 12;
-              margin-end: 12;
-              styles ["scrolled-window"]
-              
-              Gtk.Stack response_stack {
-                vexpand: true;
+              Box {
+                orientation: vertical;
                 hexpand: true;
-                Gtk.StackPage {
-                  name: "page_response";
-                  child: TextView bot_text_view {
+                vexpand: true;
+
+                styles ["card", "text-box"]
+
+                ScrolledWindow {
+                  margin-top: 12;
+                  margin-bottom: 0;
+                  margin-start: 12;
+                  margin-end: 12;
+                  styles ["scrolled-window"]
+
+                  TextView prompt_text_view {
                     wrap-mode: word_char;
                     hexpand: true;
                     vexpand: true;
-                    editable: false;
-                  };
+                    buffer: TextBuffer { };
+                    //key-press => on_key_press_event();
+
+                  }
+                }
+                Box {
+                    hexpand: true;
+                    halign: end;
+
+                  styles ["toolbar"]
+                  Button {
+                    sensitive: false;
+                    icon-name: "edit-copy-symbolic";
+                    tooltip-text: _("Copy to Clipboard");
+                    action-name: "app.copy_prompt";
+                  }
+                  // Button listen {
+                  //   action-name: "app.listen";
+                  //   tooltip-text: _("Listen");
+                  //   icon-name: "audio-input-microphone-symbolic";
+                  // }
+
+                  // Button listen_wait {
+                  //   visible: false;
+                  //   sensitive: false;
+                  //   tooltip-text: _("Listening");
+                  //   Spinner listen_spinner {
+                  //     margin-top: 8;
+                  //     margin-bottom: 8;
+                  //     margin-start: 8;
+                  //     margin-end: 8;
+                  //   }
+                  // }
+                  Button ask_button {
+                    visible: true;
+                    sensitive: false;
+                    icon-name: "paper-plane-symbolic";
+                    tooltip-text: _("Ask");
+                    hexpand: true;
+                    halign: end;
+                    action-name: "app.ask";
+                    styles ["suggested-action", "circular"]
+                  }
+                  Button wait_button {
+                    visible: false;
+                    sensitive: false;
+                    tooltip-text: _("Wait");
+                    styles ["suggested-action", "circular"]
+                    Spinner spinner {
+                      margin-top: 8;
+                      margin-bottom: 8;
+                      margin-start: 8;
+                      margin-end: 8;
+                      styles ["suggested-action", "circular"]
+                    }
+                  }
+                }
+              }
+            }
+
+            Adw.PreferencesGroup bot_group {
+              title: _("Response");
+
+
+              Box {
+                orientation: vertical;
+                hexpand: true;
+                vexpand: true;
+
+                styles ["card", "text-box"]
+
+                ScrolledWindow scrolled_response_window {
+                  margin-top: 12;
+                  margin-bottom: 0;
+                  margin-start: 12;
+                  margin-end: 12;
+                  styles ["scrolled-window"]
+                  
+                  Gtk.Stack response_stack {
+                    vexpand: true;
+                    hexpand: true;
+                    Gtk.StackPage {
+                      name: "page_response";
+                      child: TextView bot_text_view {
+                        wrap-mode: word_char;
+                        hexpand: true;
+                        vexpand: true;
+                        editable: false;
+                      };
+                    }
+
+                    // Gtk.StackPage {
+                    //   name: "page_offline";
+                    //   child: Adw.StatusPage {
+                    //     //icon-name: "network-wireless-offline-symbolic";
+                    //     title: _("Offline");
+                    //   };
+                    // }
+                  }
+                  
                 }
 
-                // Gtk.StackPage {
-                //   name: "page_offline";
-                //   child: Adw.StatusPage {
-                //     //icon-name: "network-wireless-offline-symbolic";
-                //     title: _("Offline");
-                //   };
-                // }
+                Box {
+                  hexpand: true;
+                  halign: end;
+
+                  styles ["toolbar"]
+
+                  // Button speak {
+                  //   action-name: "app.speak";
+                  //   tooltip-text: _("Speak");
+                  //   icon-name: "audio-speakers-symbolic";
+                  // }
+                  
+                  // Button speak_wait {
+                  //   visible: false;
+                  //   sensitive: false;
+                  //   tooltip-text: _("Speaking");
+                  //   Spinner speak_spinner {
+                  //     margin-top: 8;
+                  //     margin-bottom: 8;
+                  //     margin-start: 8;
+                  //     margin-end: 8;
+                  //   }
+                  // }
+
+                  Button copy_bot {
+                    sensitive: false;
+                    icon-name: "edit-copy-symbolic";
+                    tooltip-text: _("Copy to Clipboard");
+                    hexpand: true;
+                    halign: end;
+                    action-name: "app.copy_bot";
+                  }
+
+                  Button stop_button {
+                    visible: false;
+                    sensitive: false;
+                    icon-name: "x-circular-symbolic";
+                    tooltip-text: _("Stop");
+                    hexpand: true;
+                    halign: end;
+                    action-name: "app.stop";
+                    styles ["suggested-action", "circular"]
+                  }
+                }
               }
-              
-            }
+            }   
 
-            Box {
-              hexpand: true;
-              halign: end;
+            Adw.PreferencesGroup {
+              title: _("Message");
 
-              styles ["toolbar"]
-
-              // Button speak {
-              //   action-name: "app.speak";
-              //   tooltip-text: _("Speak");
-              //   icon-name: "audio-speakers-symbolic";
-              // }
-              
-              // Button speak_wait {
-              //   visible: false;
-              //   sensitive: false;
-              //   tooltip-text: _("Speaking");
-              //   Spinner speak_spinner {
-              //     margin-top: 8;
-              //     margin-bottom: 8;
-              //     margin-start: 8;
-              //     margin-end: 8;
-              //   }
-              // }
-
-              Button copy_bot {
-                sensitive: false;
-                icon-name: "edit-copy-symbolic";
-                tooltip-text: _("Copy to Clipboard");
+              Box {
+                orientation: vertical;
                 hexpand: true;
-                halign: end;
-                action-name: "app.copy_bot";
-              }
+                vexpand: true;
 
-              Button stop_button {
-                visible: false;
-                sensitive: false;
-                icon-name: "x-circular-symbolic";
-                tooltip-text: _("Stop");
-                hexpand: true;
-                halign: end;
-                action-name: "app.stop";
-                styles ["suggested-action", "circular"]
+                styles ["card", "text-box"]
+
+                ScrolledWindow {
+                  margin-top: 12;
+                  margin-bottom: 0;
+                  margin-start: 12;
+                  margin-end: 12;
+                  styles ["scrolled-window"]
+
+                  TextView {
+                    wrap-mode: word_char;
+                    hexpand: true;
+                    vexpand: true;
+                    buffer: TextBuffer { };
+                    //key-press => on_key_press_event();
+
+                  }
+                }
+                Box {
+                    hexpand: true;
+                    halign: end;
+
+                  styles ["toolbar"]
+                  Button {
+                    sensitive: false;
+                    icon-name: "edit-copy-symbolic";
+                    tooltip-text: _("Copy to Clipboard");
+                    action-name: "app.copy_prompt";
+                  }
+            
+                  Button {
+                    visible: true;
+                    sensitive: false;
+                    icon-name: "paper-plane-symbolic";
+                    tooltip-text: _("Ask");
+                    hexpand: true;
+                    halign: end;
+                    action-name: "app.ask";
+                    styles ["suggested-action", "circular"]
+                  }
+                  Button {
+                    visible: false;
+                    sensitive: false;
+                    tooltip-text: _("Wait");
+                    styles ["suggested-action", "circular"]
+                    Spinner {
+                      margin-top: 8;
+                      margin-bottom: 8;
+                      margin-start: 8;
+                      margin-end: 8;
+                      styles ["suggested-action", "circular"]
+                    }
+                  }
+                }
               }
+            }  
+            Adw.PreferencesGroup {
+              title: _("Message");
+
+              Box {
+                orientation: vertical;
+                hexpand: true;
+                vexpand: true;
+
+                styles ["card", "text-box"]
+
+                ScrolledWindow {
+                  margin-top: 12;
+                  margin-bottom: 0;
+                  margin-start: 12;
+                  margin-end: 12;
+                  styles ["scrolled-window"]
+
+                  TextView {
+                    wrap-mode: word_char;
+                    hexpand: true;
+                    vexpand: true;
+                    buffer: TextBuffer { };
+                    //key-press => on_key_press_event();
+
+                  }
+                }
+                Box {
+                    hexpand: true;
+                    halign: end;
+
+                  styles ["toolbar"]
+                  Button {
+                    sensitive: false;
+                    icon-name: "edit-copy-symbolic";
+                    tooltip-text: _("Copy to Clipboard");
+                    action-name: "app.copy_prompt";
+                  }
+            
+                  Button {
+                    visible: true;
+                    sensitive: false;
+                    icon-name: "paper-plane-symbolic";
+                    tooltip-text: _("Ask");
+                    hexpand: true;
+                    halign: end;
+                    action-name: "app.ask";
+                    styles ["suggested-action", "circular"]
+                  }
+                  Button {
+                    visible: false;
+                    sensitive: false;
+                    tooltip-text: _("Wait");
+                    styles ["suggested-action", "circular"]
+                    Spinner {
+                      margin-top: 8;
+                      margin-bottom: 8;
+                      margin-start: 8;
+                      margin-end: 8;
+                      styles ["suggested-action", "circular"]
+                    }
+                  }
+                }
+              }
+            }  
+            Adw.PreferencesGroup {
+              title: _("Message");
+
+              Box {
+                orientation: vertical;
+                hexpand: true;
+                vexpand: true;
+
+                styles ["card", "text-box"]
+
+                ScrolledWindow {
+                  margin-top: 12;
+                  margin-bottom: 0;
+                  margin-start: 12;
+                  margin-end: 12;
+                  styles ["scrolled-window"]
+
+                  TextView {
+                    wrap-mode: word_char;
+                    hexpand: true;
+                    vexpand: true;
+                    buffer: TextBuffer { };
+                    //key-press => on_key_press_event();
+
+                  }
+                }
+                Box {
+                    hexpand: true;
+                    halign: end;
+
+                  styles ["toolbar"]
+                  Button {
+                    sensitive: false;
+                    icon-name: "edit-copy-symbolic";
+                    tooltip-text: _("Copy to Clipboard");
+                    action-name: "app.copy_prompt";
+                  }
+            
+                  Button {
+                    visible: true;
+                    sensitive: false;
+                    icon-name: "paper-plane-symbolic";
+                    tooltip-text: _("Ask");
+                    hexpand: true;
+                    halign: end;
+                    action-name: "app.ask";
+                    styles ["suggested-action", "circular"]
+                  }
+                  Button {
+                    visible: false;
+                    sensitive: false;
+                    tooltip-text: _("Wait");
+                    styles ["suggested-action", "circular"]
+                    Spinner {
+                      margin-top: 8;
+                      margin-bottom: 8;
+                      margin-start: 8;
+                      margin-end: 8;
+                      styles ["suggested-action", "circular"]
+                    }
+                  }
+                }
+              }
+            }  
             }
-          }
-        }
+            
+          }     
+        };
       }
     }
   }
